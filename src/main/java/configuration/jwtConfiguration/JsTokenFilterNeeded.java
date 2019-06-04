@@ -5,6 +5,7 @@ import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
 import response.BaseResponse;
 import util.JwTokenHelper;
 
@@ -24,20 +25,6 @@ public class JsTokenFilterNeeded implements ContainerRequestFilter {
     private JwTokenHelper jwTokenHelper = JwTokenHelper.getInstance();
 
     public ContainerRequest filter(ContainerRequest request) {
-        String path = request.getPath();
-        if (path.equals(AUTHORIZATION_SERVICE_PATH))
-            return request;
-        String privateKeyHeaderValue = request.getHeaderValue(PRIVATE_KEY);
-        if (privateKeyHeaderValue == null || privateKeyHeaderValue.isEmpty())
-            throw new WebApplicationException(getUnAuthorizeResponse(PRIVATE_KEY + " is missing inside the header"));
-        try {
-            jwTokenHelper.claimKey(privateKeyHeaderValue);
-        } catch (Exception e) {
-            if (e instanceof ExpiredJwtException)
-                throw new WebApplicationException(getUnAuthorizeResponse(PRIVATE_KEY + " is expired."));
-            else if (e instanceof MalformedJwtException)
-                throw new WebApplicationException(getUnAuthorizeResponse(PRIVATE_KEY + " is not correct."));
-        }
         return request;
     }
 

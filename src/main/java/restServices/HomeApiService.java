@@ -1,42 +1,65 @@
 package restServices;
 
+import DAO.PerroDAO;
+import DAO.comentarioDao;
+import com.sun.xml.internal.ws.client.sei.ResponseBuilder;
+import configuration.jwtConfiguration.JsonTokenNeeded;
 import models.Device;
+import models.Perro;
 import response.AuthorizationResponse;
 import response.BaseResponse;
 import response.DeviceCollectionResponse;
 import util.JwTokenHelper;
 
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Arrays;
+import models.Comentarios;
 
 @Path("/")
 public class HomeApiService extends BaseApiService {
 
-    private static final String USERNAME = "username";
-    private static final String PASSWORD = "password";
 
-    @POST
-    @Path(value = "authorization_service")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response authorizationService(@HeaderParam(USERNAME) String userName, @HeaderParam(PASSWORD) String password) {
-        if (userName.isEmpty())
-            return getResponse(new BaseResponse(USERNAME + " field cannot be empty", BaseResponse.FAILURE));
-        else if (password.isEmpty())
-            return getResponse(new BaseResponse(PASSWORD + " field cannot be empty", BaseResponse.FAILURE));
-        String privateKey = JwTokenHelper.getInstance().generatePrivateKey(userName, password);
-        return getResponse(new AuthorizationResponse(BaseResponse.SUCCESS, "You're authenticated successfully. Private key will be valid for 30 mins", privateKey));
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getIt() {
+        return "Got it!";
     }
 
-    @POST
-    @Path("allDevices")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllDevices() {
-        System.out.println("Method called");
-        return getResponse(new DeviceCollectionResponse(Arrays.asList(new Device("Electric Kettle", 1, true), new Device("Computer", 2, true), new Device("Motorcycle", 3, false), new Device("Sandwich Maker", 4, true))));
+    @GET
+    @Path("perro/{puesto}")
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    public Perro getPerro(@PathParam("puesto") String puesto) {
+        return PerroDAO.listarPerro(puesto);
     }
+
+    @GET
+    @Path("perros")
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    public ArrayList<Perro> getPerros() {
+        return PerroDAO.listarPerros();
+    }
+    @OPTIONS
+    @Path("perros")
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    public Response ok() {
+        return Response.ok().build();
+    }
+    
+    @POST
+    @Path ("AgregarComentario")
+    @Produces ({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Comentarios agregarComentarios(Comentarios comentarios){
+        return comentarioDao.agregarComentario(comentarios);
+    }
+    
+     @GET
+    @Path("ListarComentarios")
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    public ArrayList<Comentarios> getComentarios() {
+        return comentarioDao.listarComentarios();
+    }
+   
 }
